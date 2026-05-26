@@ -6,7 +6,6 @@
 #include <cctype>
 #include <utility>
 #include <string>
-#include <filesystem>
 #include "bst.h"
 
 void makeTree(BST<std::string>& tree, const char* filename) {
@@ -17,8 +16,12 @@ void makeTree(BST<std::string>& tree, const char* filename) {
   }
 
   std::string word;
-  char ch;
-  while (file.get(ch)) {
+  while (!file.eof()) {
+    int ch = file.get();
+    if (file.eof()) {
+      break;
+    }
+
     if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
       word += static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
     } else {
@@ -36,11 +39,12 @@ void makeTree(BST<std::string>& tree, const char* filename) {
   file.close();
 }
 
-void printFreq(const BST<std::string>& tree) {
+void printFreq(BST<std::string>& tree) {
   std::vector<std::pair<std::string, int>> pairs = tree.getAllSortedByKey();
 
   std::sort(pairs.begin(), pairs.end(),
-    [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
+    [](const std::pair<std::string, int>& a,
+       const std::pair<std::string, int>& b) {
       if (a.second != b.second) {
         return a.second > b.second;
       }
@@ -51,11 +55,9 @@ void printFreq(const BST<std::string>& tree) {
     std::cout << p.first << " : " << p.second << "\n";
   }
 
-  std::filesystem::create_directories("result");
-
-  std::ofstream out("result/freq.txt");
+  std::ofstream out("freq.txt");
   if (!out) {
-    std::cout << "Cannot open result/freq.txt for writing!" << std::endl;
+    std::cout << "Cannot open freq.txt for writing!" << std::endl;
     return;
   }
 
